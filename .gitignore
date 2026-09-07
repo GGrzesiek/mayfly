@@ -10,4 +10,6 @@ infra/**/*.tfplan
 .coverage
 *.tfstate
 *.tfstate.backup
-.terraform.lock.hcl
+
+# .terraform.lock.hcl is intentionally NOT ignored — the provider lock file
+# is what makes `terraform init` reproducible. Commit it after the next init.
