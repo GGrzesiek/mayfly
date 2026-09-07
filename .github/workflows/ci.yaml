@@ -58,8 +58,12 @@ jobs:
             --tag $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             app/
 
+      # Pinned by commit digest rather than tag. The old reference was
+      # @0.20.0 while the upstream tag is v0.20.0, so the job failed during
+      # "Set up job" and this scan has never once executed. A tag can also be
+      # moved or deleted by its owner after review; a digest cannot.
       - name: Scan image with Trivy (fail on CRITICAL)
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:git-${{ github.sha }}"
           exit-code: "1"
