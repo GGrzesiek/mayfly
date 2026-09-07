@@ -45,14 +45,20 @@ lint-tf: ## Check Terraform formatting and lint rules
 	cd infra && tflint --recursive --format compact
 	@echo "OK"
 
+# Scans through git rather than the filesystem. A directory scan also reads
+# downloaded dependencies -- .terraform/ modules, vendored subcharts -- which
+# are gitignored, cannot be committed, and are full of example ARNs. Driving
+# the scan through git means the ignore rules live in .gitignore only.
 .PHONY: lint-secrets
-lint-secrets: ## Scan the working tree for secrets and AWS account ids
-	@echo "==> gitleaks (working tree)"
-	gitleaks detect --no-git --config .gitleaks.toml --no-banner --redact
+lint-secrets: ## Scan git history and staged changes for secrets and AWS account ids
+	@echo "==> gitleaks (history)"
+	gitleaks git --config .gitleaks.toml --no-banner --redact
+	@echo "==> gitleaks (staged)"
+	gitleaks git --staged --config .gitleaks.toml --no-banner --redact
 	@echo "OK"
 
 .PHONY: hooks
-hooks: ## Install the pre-commit hook that runs lint-secrets
-	@printf '#!/bin/sh\nexec make --no-print-directory lint-secrets\n' > .git/hooks/pre-commit
+hooks: ## Install the pre-commit hook that scans staged changes
+	@printf '#!/bin/sh\nexec gitleaks git --staged --config .gitleaks.toml --no-banner --redact\n' > .git/hooks/pre-commit
 	@chmod +x .git/hooks/pre-commit
 	@echo "installed .git/hooks/pre-commit"

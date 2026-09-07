@@ -70,9 +70,18 @@ clone-and-run, and that is the path a reader is asked to try.
 one commit, so anything new is still caught. If that list ever grows past one
 entry, the policy above is not being followed.
 
-**`make lint-secrets` scans the working tree, not history.** Scanning history
-would fail permanently on the allowlisted commit and train everyone to pass
-`--no-verify`. History was audited once; the gate guards what goes in next.
+**The scan runs through git, not over the filesystem.** A directory scan also
+reads downloaded dependencies — `.terraform/` modules, vendored subcharts —
+which are gitignored, cannot be committed, and are full of example ARNs that
+match the rules above. Excluding them by path would mean maintaining a second
+copy of `.gitignore` that silently rots. Scanning through git makes the
+exclusion structural: if git cannot see a file, it cannot be committed, so it
+is not in the threat model.
+
+`make lint-secrets` covers history and staged changes; the pre-commit hook
+scans staged changes only, which is the gate that decides what enters the
+repository. The gap this leaves — a secret sitting in the working tree,
+unstaged — cannot reach GitHub without passing the hook first.
 
 **Identifiers in Terraform state are out of scope here.** State lives in a
 private, encrypted, versioned S3 bucket with public access blocked. It is not
