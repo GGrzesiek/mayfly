@@ -1,8 +1,12 @@
+{{/*
+`{{ $value }}` and `{{ $labels.* }}` are Prometheus annotation templating, not
+Helm. They are wrapped in backtick raw-string literals so Helm emits them
+verbatim instead of trying to resolve them at render time.
+*/}}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: flask-app-alerts
-  namespace: monitoring
 spec:
   groups:
     - name: flask-app.rules
@@ -19,7 +23,7 @@ spec:
             severity: critical
           annotations:
             summary: "Flask app error rate above 5%"
-            description: "Error rate is {{ $value | humanizePercentage }} over the last 2 minutes."
+            description: "Error rate is {{ `{{ $value | humanizePercentage }}` }} over the last 2 minutes."
 
         - alert: HighLatencyP99
           expr: |
@@ -31,7 +35,7 @@ spec:
             severity: warning
           annotations:
             summary: "Flask app p99 latency above 500ms"
-            description: "p99 latency is {{ $value | humanizeDuration }}."
+            description: "p99 latency is {{ `{{ $value | humanizeDuration }}` }}."
 
         - alert: FrequentPodRestarts
           expr: |
@@ -42,5 +46,5 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "Pod {{ $labels.pod }} restarting frequently"
-            description: "{{ $value }} restarts in the last 10 minutes."
+            summary: "Pod {{ `{{ $labels.pod }}` }} restarting frequently"
+            description: "{{ `{{ $value }}` }} restarts in the last 10 minutes."
