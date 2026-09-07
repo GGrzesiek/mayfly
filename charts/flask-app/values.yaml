@@ -1,5 +1,7 @@
 image:
-  repository: ""   # set to <account>.dkr.ecr.<region>.amazonaws.com/flask-app
+  # Injected at bootstrap, never committed — an ECR URL carries the AWS
+  # account id, and this repo is public. Rendering fails loudly if unset.
+  repository: ""
   tag: "latest"
   pullPolicy: IfNotPresent
 
