@@ -32,7 +32,7 @@ flowchart LR
 ## Repository Layout
 
 ```
-execon-platform/
+mayfly/
 ├── app/          Flask microservice + tests + Dockerfile
 ├── infra/        Terraform modules (vpc, eks, ecr, github-oidc) + dev environment
 ├── charts/       Helm charts: flask-app (7 resources) and monitoring
@@ -52,7 +52,7 @@ execon-platform/
 ```bash
 cd infra/bootstrap
 terraform init
-terraform apply -var="state_bucket_name=execon-tfstate-$(openssl rand -hex 4)"
+terraform apply -var="state_bucket_name=mayfly-tfstate-$(openssl rand -hex 4)"
 ```
 
 ### 2 — Provision infrastructure (~15 min)
@@ -62,13 +62,13 @@ cd infra/environments/dev
 # Edit backend.tf: set bucket name from step 1
 # Edit terraform.tfvars: set github_org
 terraform init && terraform apply
-aws eks update-kubeconfig --name execon-dev --region eu-west-1
+aws eks update-kubeconfig --name mayfly-dev --region eu-west-1
 ```
 
 ### 3 — Push repo to GitHub and bootstrap GitOps
 
 ```bash
-git remote add origin https://github.com/YOUR_GITHUB_ORG/execon-platform.git
+git remote add origin https://github.com/YOUR_GITHUB_ORG/mayfly.git
 git push -u origin main
 kubectl apply -f manifests/root-app.yaml
 ```

@@ -10,7 +10,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/GGrzesiek/execon-platform.git
+    repoURL: https://github.com/GGrzesiek/mayfly.git
     targetRevision: HEAD
     path: charts/monitoring
   destination:

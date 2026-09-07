@@ -10,8 +10,8 @@ provider "aws" { region = var.aws_region }
 data "aws_caller_identity" "current" {}
 
 locals {
-  name = "execon-dev"
-  tags = { Environment = "dev", Project = "execon-platform" }
+  name = "mayfly-dev"
+  tags = { Environment = "dev", Project = "mayfly" }
   azs  = ["${var.aws_region}a", "${var.aws_region}b", "${var.aws_region}c"]
 }
 
@@ -34,6 +34,7 @@ module "ecr" {
 
 module "github_oidc" {
   source      = "../../modules/github-oidc"
+  name_prefix = local.name
   github_org  = var.github_org
   github_repo = var.github_repo
   ecr_arns    = [module.ecr.repository_arn]
