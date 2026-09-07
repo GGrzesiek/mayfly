@@ -14,10 +14,8 @@ infra/**/*.tfplan
 # .terraform.lock.hcl is intentionally NOT ignored — the provider lock file
 # is what makes `terraform init` reproducible. Commit it after the next init.
 
-# Local working documents: handoff notes, positioning strategy, project brief.
-# These describe career context and are not project documentation — they must
-# never reach a public repo. Kept alongside the archived planning artifacts in
-# ~/Projects/DevOps-Showcase-notes/.
-/HANDOFF.md
-/claude-code-brief-mayfly.md
-/portfolio-devops-2026.md
+# Working notes: handoff docs, positioning strategy, archived planning output.
+# Kept in the working copy for convenience, never committed — they describe
+# career context rather than the project, and this repo is public.
+# Not covered by any backup: `git clean -fdx` will delete them.
+/.notes/
