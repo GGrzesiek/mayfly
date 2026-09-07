@@ -1,28 +1,31 @@
 name: CI
 
+# The workflow file is in its own path filter on purpose: a change to the
+# pipeline should be exercised by the pipeline. Without it, this file could be
+# edited and merged without ever running -- which is how a trivy-action
+# reference that never resolved survived two merges (see #5).
 on:
   push:
     branches: [master]
-    paths: ["app/**", "charts/flask-app/**"]
+    paths: ["app/**", "charts/flask-app/**", ".github/workflows/ci.yaml"]
+  pull_request:
+    paths: ["app/**", "charts/flask-app/**", ".github/workflows/ci.yaml"]
 
 permissions:
-  id-token: write
-  contents: write
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   ECR_REPOSITORY: flask-app
   AWS_REGION: eu-west-1
+  IMAGE_TAG: git-${{ github.sha }}
 
 jobs:
-  ci:
+  test:
     runs-on: ubuntu-latest
-    env:
-      # The account id is not a secret in the cryptographic sense, but it is an
-      # identifier worth keeping out of a public repo: it enables role-name
-      # enumeration and targeted support-desk social engineering. The `secrets`
-      # context is not available in workflow-level `env`, hence job level.
-      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com
-
     steps:
       - uses: actions/checkout@v4
 
@@ -42,6 +45,63 @@ jobs:
           cd app
           pytest tests/ -v --cov=src --cov-fail-under=80
 
+  # Builds and scans without touching AWS, so it runs on every pull request.
+  # The image that gets scanned here is the exact image the publish job pushes
+  # -- it travels as an artifact rather than being rebuilt, so the scan result
+  # describes the bytes that ship.
+  build-and-scan:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build --tag "$ECR_REPOSITORY:$IMAGE_TAG" app/
+
+      # Pinned by commit digest rather than tag: a tag can be moved or deleted
+      # by its owner after review. See #5 for the incident that motivated this.
+      - name: Scan image with Trivy (fail on CRITICAL)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: "${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          exit-code: "1"
+          severity: "CRITICAL"
+          ignore-unfixed: true
+
+      - name: Export the scanned image
+        if: github.event_name == 'push'
+        run: docker save "$ECR_REPOSITORY:$IMAGE_TAG" | gzip > image.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: image-${{ github.sha }}
+          path: image.tar.gz
+          retention-days: 1
+
+  # The only job that needs AWS. Skipped -- not failed -- when the account is
+  # not standing, because this project runs on kind and brings EKS up only for
+  # a recorded demo. Set the repository variable AWS_PROVISIONED=true while it
+  # is up. Same contract as the Terraform workflow.
+  publish:
+    needs: build-and-scan
+    if: github.event_name == 'push' && vars.AWS_PROVISIONED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    env:
+      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: image-${{ github.sha }}
+
+      - name: Load the scanned image
+        run: gunzip -c image.tar.gz | docker load
+
       - name: Configure AWS credentials (OIDC — no static keys)
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -51,35 +111,19 @@ jobs:
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker image
-        run: |
-          docker build \
-            --tag $ECR_REGISTRY/$ECR_REPOSITORY:git-${{ github.sha }} \
-            --tag $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-            app/
-
-      # Pinned by commit digest rather than tag. The old reference was
-      # @0.20.0 while the upstream tag is v0.20.0, so the job failed during
-      # "Set up job" and this scan has never once executed. A tag can also be
-      # moved or deleted by its owner after review; a digest cannot.
-      - name: Scan image with Trivy (fail on CRITICAL)
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          image-ref: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:git-${{ github.sha }}"
-          exit-code: "1"
-          severity: "CRITICAL"
-          ignore-unfixed: true
-
+      # No `latest`. Argo CD resolves the image from the tag committed below,
+      # and a mutable tag would make the deployed digest unknowable after the
+      # fact -- which also breaks image signing later.
       - name: Push to ECR
         run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:git-${{ github.sha }}
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker tag "$ECR_REPOSITORY:$IMAGE_TAG" "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Update image tag in Helm values
         run: |
-          sed -i "s|  tag: .*|  tag: \"git-${{ github.sha }}\"|" charts/flask-app/values.yaml
+          sed -i "s|^  tag: .*|  tag: \"$IMAGE_TAG\"|" charts/flask-app/values.yaml
           git config user.email "ci@github-actions"
           git config user.name "GitHub Actions"
           git add charts/flask-app/values.yaml
-          git diff --staged --quiet || git commit -m "ci: update flask-app image to git-${{ github.sha }}"
+          git diff --staged --quiet || git commit -m "ci: update flask-app image to $IMAGE_TAG"
           git push
