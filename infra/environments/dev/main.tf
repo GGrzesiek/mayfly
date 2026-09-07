@@ -34,6 +34,7 @@ module "ecr" {
 
 module "github_oidc" {
   source      = "../../modules/github-oidc"
+  name_prefix = local.name
   github_org  = var.github_org
   github_repo = var.github_repo
   ecr_arns    = [module.ecr.repository_arn]

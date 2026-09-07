@@ -57,7 +57,7 @@ data "aws_iam_policy_document" "github_trust_pr" {
 }
 
 resource "aws_iam_role" "github_actions" {
-  name               = "github-actions-ecr-push"
+  name               = "${var.name_prefix}-github-actions-ecr-push"
   assume_role_policy = data.aws_iam_policy_document.github_trust_push.json
   tags               = var.tags
 }
@@ -86,7 +86,7 @@ resource "aws_iam_role_policy" "ecr_push" {
 
 # Separate role for Terraform plan — read-only, no ECR write
 resource "aws_iam_role" "terraform_plan" {
-  name               = "github-actions-terraform-plan"
+  name               = "${var.name_prefix}-github-actions-terraform-plan"
   assume_role_policy = data.aws_iam_policy_document.github_trust_pr.json
   tags               = var.tags
 }

@@ -1,3 +1,8 @@
+variable "name_prefix" {
+  type        = string
+  description = "Prefix for IAM role names, so they do not collide with other projects in the account"
+}
+
 variable "github_org" {
   type = string
 }
