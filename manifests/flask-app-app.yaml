@@ -20,6 +20,14 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: flask-app
+  # The HPA owns spec.replicas. Even though the chart no longer renders that
+  # field, this keeps selfHeal from reverting the HPA's scaling decisions if
+  # hpa.enabled is ever turned off, or another controller writes the field.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
     automated:
       selfHeal: true
