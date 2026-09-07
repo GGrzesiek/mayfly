@@ -11,6 +11,8 @@ SHELL := /bin/bash
 # and rendering is all we are checking here.
 LINT_IMAGE_REPO ?= localhost/flask-app
 
+VENV := .venv
+
 .PHONY: help
 help: ## Show this help
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -21,7 +23,22 @@ deps: ## Fetch Helm chart dependencies
 	helm dependency build charts/monitoring
 
 .PHONY: lint
-lint: lint-secrets lint-helm lint-tf ## Run every check
+lint: lint-secrets lint-python lint-helm lint-tf ## Run every check
+
+# Creates .venv on first use so a fresh clone can run `make lint` unaided.
+# flake8 and pytest only ever ran in CI, and CI only ran on master -- which is
+# how two lint violations sat on master for months.
+$(VENV)/bin/flake8:
+	python3 -m venv $(VENV)
+	$(VENV)/bin/pip -q install -r app/requirements-dev.txt
+
+.PHONY: lint-python
+lint-python: $(VENV)/bin/flake8 ## Lint and test the Flask app
+	@echo "==> flake8"
+	$(VENV)/bin/flake8 app/src app/tests --max-line-length=100
+	@echo "==> pytest"
+	cd app && ../$(VENV)/bin/pytest tests/ -q --cov=src --cov-fail-under=80
+	@echo "OK"
 
 .PHONY: lint-helm
 lint-helm: ## Lint and render both Helm charts

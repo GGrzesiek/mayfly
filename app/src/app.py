@@ -1,7 +1,12 @@
 import os
 import time
 from flask import Flask, jsonify, Response, g, request
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, multiprocess as prom_multiprocess
+from prometheus_client import (
+    generate_latest,
+    CONTENT_TYPE_LATEST,
+    CollectorRegistry,
+    multiprocess as prom_multiprocess,
+)
 from metrics import REQUEST_COUNT, REQUEST_LATENCY
 
 
