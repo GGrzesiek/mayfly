@@ -1,0 +1,29 @@
+# Extends the stock gitleaks ruleset with AWS account identifiers.
+#
+# An account id is not a credential, so the default rules ignore it — which is
+# exactly how one sat in ci.yaml and flask-app-app.yaml through a clean scan.
+# In a public repo it is still worth withholding: it enables role-name
+# enumeration and gives a support-desk social engineering attempt a real handle.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "aws-account-id-ecr"
+description = "AWS account id in an ECR registry URL"
+regex = '''\b[0-9]{12}\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com'''
+tags = ["aws", "identifier"]
+
+[[rules]]
+id = "aws-account-id-arn"
+description = "AWS account id in an ARN"
+regex = '''arn:aws[a-z-]*:[a-z0-9-]*:[a-z0-9-]*:[0-9]{12}:'''
+tags = ["aws", "identifier"]
+
+[allowlist]
+description = "Known historical exposure, left in place deliberately"
+# Rewriting a public repo's history does not remove data from GitHub — orphaned
+# commits stay reachable by SHA. The mitigation is tearing the account down
+# after the recorded demo, not rewriting refs. See
+# docs/adr/0004-secrets-and-identifier-handling.md.
+commits = ["a1c10953dd5c901e1cf59ca67b9c85ee32089cbc"]
+paths = ['''^docs/adr/0004-secrets-and-identifier-handling\.md$''']

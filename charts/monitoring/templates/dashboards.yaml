@@ -1,0 +1,18 @@
+{{/*
+Dashboards are loaded verbatim from dashboards/*.json via .Files.Get, so Helm
+never parses their contents. Grafana's own `{{label}}` legend syntax collides
+with Go template delimiters — keeping the JSON outside templates/ means a
+dashboard exported straight from Grafana can be dropped in without escaping.
+*/}}
+{{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-{{ base $path | trimSuffix ".json" }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  {{ base $path }}: |
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}

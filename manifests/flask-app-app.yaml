@@ -13,13 +13,22 @@ spec:
     repoURL: https://github.com/GGrzesiek/execon-platform.git
     targetRevision: HEAD
     path: charts/flask-app
-    helm:
-      parameters:
-        - name: image.repository
-          value: "945695383505.dkr.ecr.eu-west-1.amazonaws.com/flask-app"
+    # image.repository is deliberately not set here. A pull-based GitOps model
+    # reads only from git, so anything written here is public — including the
+    # AWS account id embedded in an ECR URL. It is injected at bootstrap
+    # instead; see docs/adr/0004-secrets-and-identifier-handling.md.
+    # The local kind path (make demo) sets it to a locally loaded image.
   destination:
     server: https://kubernetes.default.svc
     namespace: flask-app
+  # The HPA owns spec.replicas. Even though the chart no longer renders that
+  # field, this keeps selfHeal from reverting the HPA's scaling decisions if
+  # hpa.enabled is ever turned off, or another controller writes the field.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
     automated:
       selfHeal: true

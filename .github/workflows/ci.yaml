@@ -10,13 +10,18 @@ permissions:
   contents: write
 
 env:
-  ECR_REGISTRY: 945695383505.dkr.ecr.eu-west-1.amazonaws.com
   ECR_REPOSITORY: flask-app
   AWS_REGION: eu-west-1
 
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      # The account id is not a secret in the cryptographic sense, but it is an
+      # identifier worth keeping out of a public repo: it enables role-name
+      # enumeration and targeted support-desk social engineering. The `secrets`
+      # context is not available in workflow-level `env`, hence job level.
+      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com
 
     steps:
       - uses: actions/checkout@v4

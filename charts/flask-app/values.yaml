@@ -1,8 +1,11 @@
 image:
-  repository: ""   # set to <account>.dkr.ecr.<region>.amazonaws.com/flask-app
+  # Injected at bootstrap, never committed — an ECR URL carries the AWS
+  # account id, and this repo is public. Rendering fails loudly if unset.
+  repository: ""
   tag: "latest"
   pullPolicy: IfNotPresent
 
+# Only used when hpa.enabled is false — otherwise the HPA owns spec.replicas.
 replicaCount: 2
 
 service:
@@ -17,6 +20,7 @@ resources:
     memory: 256Mi
 
 hpa:
+  enabled: true
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 70

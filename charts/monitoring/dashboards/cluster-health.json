@@ -1,0 +1,41 @@
+{
+  "title": "Kubernetes Cluster Health",
+  "uid": "k8s-health",
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "id": 1, "type": "timeseries", "title": "Node CPU Usage %",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "100 - (avg by(node) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+        "legendFormat": "{{node}}"
+      }]
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Node Memory Usage %",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
+        "legendFormat": "{{instance}}"
+      }]
+    },
+    {
+      "id": 3, "type": "stat", "title": "Pod Status",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "count(kube_pod_status_phase{phase=\"Running\"})", "legendFormat": "Running"},
+        {"expr": "count(kube_pod_status_phase{phase=\"Pending\"}) or vector(0)", "legendFormat": "Pending"},
+        {"expr": "count(kube_pod_status_phase{phase=\"Failed\"}) or vector(0)", "legendFormat": "Failed"}
+      ]
+    },
+    {
+      "id": 4, "type": "table", "title": "ArgoCD App Sync Status",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "argocd_app_info",
+        "legendFormat": "{{name}} — {{sync_status}}"
+      }]
+    }
+  ]
+}

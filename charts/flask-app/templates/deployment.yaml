@@ -5,7 +5,9 @@ metadata:
   labels:
     app: {{ .Release.Name }}
 spec:
+  {{- if not .Values.hpa.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}
@@ -24,7 +26,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: {{ .Release.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ required "image.repository is not set. Pass it at bootstrap:\n  helm ... --set image.repository=<registry>/flask-app\nSee docs/adr/0004-secrets-and-identifier-handling.md" .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.port }}

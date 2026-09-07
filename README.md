@@ -75,13 +75,39 @@ kubectl apply -f manifests/root-app.yaml
 
 ArgoCD syncs `manifests/` and deploys the Flask app and monitoring stack automatically.
 
-### 4 — Update manifests with your values
+### 4 — Configure
 
-Edit these placeholders before pushing:
-- `manifests/*.yaml` → replace `YOUR_GITHUB_ORG` and `YOUR_ECR_URL`
-- `.github/workflows/ci.yaml` → replace `YOUR_ECR_REGISTRY`, `YOUR_AWS_REGION`, `YOUR_ROLE_ARN`
-- `.github/workflows/terraform-plan.yaml` → replace `YOUR_ROLE_ARN`
-- `charts/monitoring/values.yaml` → replace `YOUR_SLACK_WEBHOOK_URL`
+Repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Used by | Value |
+|---|---|---|
+| `AWS_ROLE_ARN` | `ci.yaml` | `github_actions_role_arn` output from step 2 |
+| `AWS_TERRAFORM_PLAN_ROLE_ARN` | `terraform-plan.yaml` | `terraform_plan_role_arn` output from step 2 |
+| `AWS_ACCOUNT_ID` | `ci.yaml` | builds the ECR registry URL — see [ADR 0004](docs/adr/0004-secrets-and-identifier-handling.md) |
+
+The image registry is **not** committed to this repo, because Argo CD reads only
+from git and anything placed there is public. Inject it when bootstrapping:
+
+```bash
+kubectl -n argocd patch application flask-app --type merge -p \
+  '{"spec":{"source":{"helm":{"parameters":[
+     {"name":"image.repository","value":"<account>.dkr.ecr.<region>.amazonaws.com/flask-app"}]}}}}'
+```
+
+Leaving it unset is safe — the chart fails at render time with instructions
+rather than deploying a broken pod.
+
+Still a placeholder, and the reason this repo is not yet clone-and-run on AWS:
+- `charts/monitoring/values.yaml` → `YOUR_SLACK_WEBHOOK_URL`, which should move
+  to a secret rather than a chart value
+- Grafana's admin secret must be created by hand before the monitoring app syncs
+
+### Before pushing
+
+```bash
+make lint     # renders both charts, scans for secrets, checks Terraform
+make hooks    # installs the pre-commit secret scan
+```
 
 ## Access
 

@@ -10,4 +10,12 @@ infra/**/*.tfplan
 .coverage
 *.tfstate
 *.tfstate.backup
-.terraform.lock.hcl
+
+# .terraform.lock.hcl is intentionally NOT ignored — the provider lock file
+# is what makes `terraform init` reproducible. Commit it after the next init.
+
+# Working notes: handoff docs, positioning strategy, archived planning output.
+# Kept in the working copy for convenience, never committed — they describe
+# career context rather than the project, and this repo is public.
+# Not covered by any backup: `git clean -fdx` will delete them.
+/.notes/
