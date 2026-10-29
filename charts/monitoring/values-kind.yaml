@@ -1,0 +1,33 @@
+# Overrides for the local kind cluster (make demo). Layered on top of
+# values.yaml by deploy/kind/apps, never used on AWS.
+
+kube-prometheus-stack:
+  # The control plane on kind binds these components' metrics to 127.0.0.1,
+  # so Prometheus cannot reach them. Left enabled, they show as down targets
+  # and fire *Down alerts, which is noise rather than signal on a laptop.
+  kubeEtcd:
+    enabled: false
+  kubeControllerManager:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+  kubeProxy:
+    enabled: false
+
+  # kind on Docker Desktop (Windows/WSL2, macOS) does not mount / as shared,
+  # and node-exporter's host root mount fails to start there. Filesystem
+  # metrics are lost; CPU, memory and network metrics are unaffected.
+  prometheus-node-exporter:
+    hostRootFsMount:
+      enabled: false
+
+  # No Slack locally. The receivers list replaces the one in values.yaml, and
+  # the chart's default routes (Watchdog, InfoInhibitor) already point at
+  # "null", so this is the whole config needed for Alertmanager to start.
+  # Alerts are still visible in the Alertmanager and Prometheus UIs.
+  alertmanager:
+    config:
+      route:
+        receiver: "null"
+      receivers:
+        - name: "null"
