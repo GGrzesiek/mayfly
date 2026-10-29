@@ -1,0 +1,32 @@
+# Root Application for the local kind cluster, applied by `make demo`.
+#
+# @REVISION@ is replaced by the Makefile (REVISION, default master) before
+# apply. The same value is passed down to the child Applications, so testing a
+# branch deploys that branch's charts, not a mix of the branch and master.
+# Argo CD reads from GitHub, so the revision has to be pushed first.
+#
+# Unlike manifests/root-app.yaml, this app does not manage itself: it points
+# at deploy/kind/apps, which does not contain this file. Changing its
+# parameters at runtime therefore sticks instead of being self-healed away.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/GGrzesiek/mayfly.git
+    targetRevision: "@REVISION@"
+    path: deploy/kind/apps
+    helm:
+      parameters:
+        - name: revision
+          value: "@REVISION@"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true

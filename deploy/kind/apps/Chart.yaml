@@ -1,0 +1,5 @@
+apiVersion: v2
+name: kind-apps
+description: App-of-apps for the local kind cluster — same charts as manifests/, with kind values layered on
+type: application
+version: 0.1.0
