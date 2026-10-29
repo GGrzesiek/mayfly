@@ -1,0 +1,20 @@
+# Overrides for the local kind cluster (make demo). Layered on top of
+# values.yaml by deploy/kind/apps, never used on AWS.
+#
+# Kept in its own file rather than in values.yaml because CI rewrites the
+# `  tag:` line of values.yaml on every publish; a kind tag living there would
+# be overwritten by the next push.
+
+image:
+  # Built locally and pushed into the node with `kind load docker-image`.
+  # Not a real registry, so pullPolicy Never: if the load step was skipped the
+  # pod fails with ErrImageNeverPull instead of retrying a pull forever.
+  repository: mayfly/flask-app
+  tag: dev
+  pullPolicy: Never
+
+# There is no ALB controller on kind. An Ingress without a load balancer
+# address stays Progressing in Argo CD, so the app would never go Healthy.
+# Reach the service with `make ui` (port-forward) instead.
+ingress:
+  enabled: false

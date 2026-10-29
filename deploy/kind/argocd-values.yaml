@@ -1,0 +1,31 @@
+# Argo CD Helm values for the local kind cluster.
+
+# No SSO and no notification targets locally; both only cost memory.
+dex:
+  enabled: false
+notifications:
+  enabled: false
+
+configs:
+  params:
+    # TLS terminates nowhere on a laptop; `make ui` port-forwards plain HTTP.
+    server.insecure: true
+  cm:
+    # Argo CD stopped assessing the health of Application resources in 1.8.
+    # Without this, the sync waves on the child Applications do not wait for
+    # anything: flask-app (wave 1) can sync before monitoring (wave 0) has
+    # installed the ServiceMonitor CRD, and fail. This is the check from the
+    # Argo CD docs for app-of-apps ordering.
+    resource.customizations.health.argoproj.io_Application: |
+      hs = {}
+      hs.status = "Progressing"
+      hs.message = ""
+      if obj.status ~= nil then
+        if obj.status.health ~= nil then
+          hs.status = obj.status.health.status
+          if obj.status.health.message ~= nil then
+            hs.message = obj.status.health.message
+          end
+        end
+      end
+      return hs

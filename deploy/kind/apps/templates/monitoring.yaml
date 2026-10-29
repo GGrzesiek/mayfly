@@ -1,0 +1,39 @@
+# Mirrors manifests/monitoring-app.yaml; differs only in the kind values file
+# and the retry. Keep the two in step.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.io
+spec:
+  project: default
+  source:
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.revision | quote }}
+    path: charts/monitoring
+    helm:
+      valueFiles:
+        - values-kind.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    # An automated sync that fails is not retried for the same revision
+    # unless retry is set. On a cold cluster the first attempt can lose a race
+    # with CRD registration; this lets it recover without a manual sync.
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
