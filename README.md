@@ -22,7 +22,7 @@ flowchart LR
 | Layer | Technology |
 |---|---|
 | Cloud infra | AWS EKS, VPC, ECR, ALB |
-| IaC | Terraform 1.8 + community modules |
+| IaC | Terraform 1.10+ + community modules |
 | GitOps | ArgoCD 2.x (app-of-apps pattern) |
 | CI/CD | GitHub Actions (OIDC — no static AWS credentials) |
 | App | Python 3.12, Flask 3, prometheus-client, Gunicorn |
@@ -43,7 +43,7 @@ mayfly/
 ## Prerequisites
 
 - AWS CLI configured (`aws sts get-caller-identity` succeeds)
-- Terraform 1.8+, kubectl, Helm 3, ArgoCD CLI, Docker
+- Terraform 1.10+, kubectl, Helm 3, ArgoCD CLI, Docker
 
 ## Setup
 

@@ -20,9 +20,9 @@ variable "state_bucket_arns" {
   description = "ARNs of S3 buckets holding Terraform state (for terraform-plan role)"
 }
 
-variable "lock_table_arn" {
+variable "lock_file_arn" {
   type        = string
-  description = "ARN of the DynamoDB lock table (for terraform-plan role)"
+  description = "ARN of the S3 lock object next to the state (for terraform-plan role)"
 }
 
 variable "tags" {
