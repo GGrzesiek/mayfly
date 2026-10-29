@@ -37,10 +37,33 @@ mayfly/
 ├── infra/        Terraform modules (vpc, eks, ecr, github-oidc) + dev environment
 ├── charts/       Helm charts: flask-app (7 resources) and monitoring
 ├── manifests/    ArgoCD Application CRDs (app-of-apps)
+├── deploy/kind/  Local cluster: kind config, Argo CD values, kind app-of-apps
 └── .github/      CI pipeline + Terraform plan workflow
 ```
 
-## Prerequisites
+## Run locally (kind)
+
+No AWS account needed. Requires Docker, [kind](https://kind.sigs.k8s.io/) v0.33+,
+kubectl, Helm 3, make and openssl. On Windows, run from a WSL2 distro (e.g.
+Ubuntu) with Docker Desktop's WSL integration enabled, and clone into the
+Linux filesystem rather than `/mnt/c` — the Makefile expects bash.
+
+```bash
+make demo      # kind cluster + Argo CD + app + kube-prometheus-stack
+make ui        # port-forwards and prints logins: Argo CD :8080, Grafana :3000, app :8081
+make destroy   # delete the cluster
+```
+
+Argo CD deploys from GitHub, not from your working copy, so local edits to
+`charts/` are not picked up until pushed. To try a branch:
+`git push -u origin <branch> && make demo REVISION=<branch>`. The app image
+is the exception: it is built from `app/` locally and loaded into the node.
+
+What differs from AWS lives in `deploy/kind/` and `charts/*/values-kind.yaml`:
+no ingress (port-forward instead), no Slack receiver, and the control-plane
+scrape targets kind cannot expose are switched off.
+
+## Prerequisites (AWS)
 
 - AWS CLI configured (`aws sts get-caller-identity` succeeds)
 - Terraform 1.8+, kubectl, Helm 3, ArgoCD CLI, Docker
