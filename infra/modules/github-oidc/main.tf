@@ -97,9 +97,12 @@ data "aws_iam_policy_document" "terraform_plan" {
     actions   = ["s3:GetObject", "s3:ListBucket"]
     resources = var.state_bucket_arns
   }
+  # terraform plan takes the state lock. With use_lockfile that is an object
+  # write, so the plan role may create and remove the lock object -- and only
+  # that object; the state itself stays read-only.
   statement {
-    actions   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:DeleteItem"]
-    resources = [var.lock_table_arn]
+    actions   = ["s3:PutObject", "s3:DeleteObject"]
+    resources = [var.lock_file_arn]
   }
   # Read-only AWS permissions needed for terraform plan (state refresh)
   statement {

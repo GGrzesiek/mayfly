@@ -7,8 +7,6 @@ terraform {
 
 provider "aws" { region = var.aws_region }
 
-data "aws_caller_identity" "current" {}
-
 locals {
   name = "mayfly-dev"
   tags = { Environment = "dev", Project = "mayfly" }
@@ -40,7 +38,7 @@ module "github_oidc" {
   ecr_arns    = [module.ecr.repository_arn]
 
   state_bucket_arns = ["arn:aws:s3:::${var.state_bucket_name}", "arn:aws:s3:::${var.state_bucket_name}/*"]
-  lock_table_arn    = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/terraform-locks"
+  lock_file_arn     = "arn:aws:s3:::${var.state_bucket_name}/dev/terraform.tfstate.tflock"
 
   tags = local.tags
 }
