@@ -63,6 +63,15 @@ What differs from AWS lives in `deploy/kind/` and `charts/*/values-kind.yaml`:
 no ingress (port-forward instead), no Slack receiver, and the control-plane
 scrape targets kind cannot expose are switched off.
 
+What `make demo` brings up (captured from a run on kind; traffic generated
+with a curl loop, including requests to unknown paths for the 404 series):
+
+| Argo CD: all apps synced | Argo CD: flask-app resources |
+|---|---|
+| ![Argo CD applications](docs/screenshots/argocd-applications.png) | ![flask-app resource tree](docs/screenshots/argocd-flask-app-tree.png) |
+| **Grafana: Flask app RED metrics** | **Grafana: cluster health** |
+| ![Flask RED dashboard](docs/screenshots/grafana-flask-red.png) | ![Cluster health dashboard](docs/screenshots/grafana-cluster-health.png) |
+
 ## Prerequisites (AWS)
 
 - AWS CLI configured (`aws sts get-caller-identity` succeeds)

@@ -42,3 +42,8 @@ kube-prometheus-stack:
               channel: "#alerts"
               title: "{{ .GroupLabels.alertname }}"
               text: "{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
+
+# Requires controller.metrics.enabled in the Argo CD install (see
+# deploy/kind/argocd-values.yaml and infra/modules/eks/main.tf).
+argocdServiceMonitor:
+  enabled: true

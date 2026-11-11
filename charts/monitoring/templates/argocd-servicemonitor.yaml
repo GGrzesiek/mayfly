@@ -1,0 +1,23 @@
+{{/*
+Scrapes the Argo CD application controller, which exports argocd_app_info
+(sync and health status per Application) for the Cluster Health dashboard.
+
+It lives here rather than in the Argo CD chart's own serviceMonitor values
+because Argo CD is installed before kube-prometheus-stack: at that point the
+ServiceMonitor CRD does not exist yet and the install would fail. The metrics
+Service itself is enabled in the Argo CD values (controller.metrics.enabled).
+*/}}
+{{- if .Values.argocdServiceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-application-controller
+  namespace: argocd
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-metrics
+  endpoints:
+    - port: http-metrics
+      interval: 30s
+{{- end }}

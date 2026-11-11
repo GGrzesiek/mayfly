@@ -60,6 +60,19 @@ def test_post_to_index_returns_405(client):
     assert client.post("/").status_code == 405
 
 
+def test_metrics_label_requests_by_route(client):
+    client.get("/health")
+    response = client.get("/metrics")
+    assert b'route="/health"' in response.data
+
+
+def test_unmatched_paths_share_one_route_label(client):
+    client.get("/scanner-probe-a1b2c3")
+    response = client.get("/metrics")
+    assert b"scanner-probe-a1b2c3" not in response.data
+    assert b'route="<unmatched>"' in response.data
+
+
 def test_metrics_contains_app_info(client):
     response = client.get("/metrics")
     assert b"app_info" in response.data
