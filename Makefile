@@ -118,6 +118,8 @@ ui: ## Port-forward Argo CD (8080), Grafana (3000) and the app (8081); Ctrl-C to
 DRIFT_ROUNDS ?= 5
 DRIFT_MODE ?= isolated
 DRIFT_CSV ?= docs/drift/$(DRIFT_MODE).csv
+# Set per OS further up once the Windows venv handling lands; a no-op then.
+PYTHON ?= python3
 
 .PHONY: drift
 drift: ## Hand-edit and delete flask-app resources, time how long Argo CD takes to revert them
@@ -125,8 +127,8 @@ drift: ## Hand-edit and delete flask-app resources, time how long Argo CD takes 
 
 .PHONY: drift-chart
 drift-chart: ## Render the docs/drift/*.csv results as SVG charts
-	python3 deploy/kind/drift-chart.py docs/drift/isolated.csv docs/drift/isolated.svg
-	python3 deploy/kind/drift-chart.py docs/drift/repeated.csv docs/drift/repeated.svg
+	$(PYTHON) deploy/kind/drift-chart.py docs/drift/isolated.csv docs/drift/isolated.svg
+	$(PYTHON) deploy/kind/drift-chart.py docs/drift/repeated.csv docs/drift/repeated.svg
 
 .PHONY: destroy
 destroy: ## Delete the local kind cluster (never touches AWS)
