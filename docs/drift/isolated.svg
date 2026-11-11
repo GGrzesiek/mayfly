@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="234" viewBox="0 0 720 234" role="img" aria-label="Seconds Argo CD took to revert each manual change">
+<style>
+.surface { fill: #fcfcfb; }
+.title { fill: #0b0b0b; font: 600 15px system-ui, sans-serif; }
+.label { fill: #52514e; font: 13px system-ui, sans-serif; }
+.value { fill: #0b0b0b; font: 600 12px system-ui, sans-serif; }
+.grid { stroke: #e4e3df; stroke-width: 1; }
+.median { stroke: #0b0b0b; stroke-width: 2; }
+.mark { fill: #2a78d6; stroke: #fcfcfb; stroke-width: 2; }
+.dot { fill-opacity: 0.8; }
+@media (prefers-color-scheme: dark) {
+  .surface { fill: #1a1a19; }
+  .title, .value { fill: #f0efec; }
+  .label { fill: #c3c2b7; }
+  .grid { stroke: #3a3a37; }
+  .median { stroke: #f0efec; }
+  .mark { fill: #3987e5; stroke: #1a1a19; }
+}
+</style>
+<rect class="surface" width="720" height="234" rx="6"/>
+<text class="title" x="20" y="30">Argo CD self-heal: seconds to revert a one-off manual change (10 rounds each, kind)</text>
+<line class="grid" x1="190.0" y1="66" x2="190.0" y2="190"/>
+<text class="label" x="190.0" y="210" text-anchor="middle">0s</text>
+<line class="grid" x1="315.0" y1="66" x2="315.0" y2="190"/>
+<text class="label" x="315.0" y="210" text-anchor="middle">0.25s</text>
+<line class="grid" x1="440.0" y1="66" x2="440.0" y2="190"/>
+<text class="label" x="440.0" y="210" text-anchor="middle">0.5s</text>
+<line class="grid" x1="565.0" y1="66" x2="565.0" y2="190"/>
+<text class="label" x="565.0" y="210" text-anchor="middle">0.75s</text>
+<line class="grid" x1="690.0" y1="66" x2="690.0" y2="190"/>
+<text class="label" x="690.0" y="210" text-anchor="middle">1s</text>
+<text class="label" x="176" y="101.0" text-anchor="end">Edited a managed field</text>
+<circle class="mark dot" cx="569.0" cy="90.0" r="5"><title>round 1: 0.76s</title></circle>
+<circle class="mark dot" cx="566.0" cy="97.0" r="5"><title>round 2: 0.75s</title></circle>
+<circle class="mark dot" cx="575.5" cy="104.0" r="5"><title>round 3: 0.77s</title></circle>
+<circle class="mark dot" cx="556.5" cy="90.0" r="5"><title>round 4: 0.73s</title></circle>
+<circle class="mark dot" cx="573.0" cy="97.0" r="5"><title>round 5: 0.77s</title></circle>
+<circle class="mark dot" cx="559.0" cy="104.0" r="5"><title>round 6: 0.74s</title></circle>
+<circle class="mark dot" cx="566.5" cy="90.0" r="5"><title>round 7: 0.75s</title></circle>
+<circle class="mark dot" cx="567.0" cy="97.0" r="5"><title>round 8: 0.75s</title></circle>
+<circle class="mark dot" cx="566.0" cy="104.0" r="5"><title>round 9: 0.75s</title></circle>
+<circle class="mark dot" cx="572.5" cy="90.0" r="5"><title>round 10: 0.77s</title></circle>
+<line class="median" x1="566.8" y1="82.0" x2="566.8" y2="112.0"/>
+<text class="value" x="566.8" y="76.0" text-anchor="middle">median 0.8s</text>
+<text class="label" x="176" y="163.0" text-anchor="end">Deleted the Service</text>
+<circle class="mark dot" cx="574.0" cy="152.0" r="5"><title>round 1: 0.77s</title></circle>
+<circle class="mark dot" cx="388.0" cy="159.0" r="5"><title>round 2: 0.40s</title></circle>
+<circle class="mark dot" cx="398.0" cy="166.0" r="5"><title>round 3: 0.42s</title></circle>
+<circle class="mark dot" cx="397.0" cy="152.0" r="5"><title>round 4: 0.41s</title></circle>
+<circle class="mark dot" cx="390.5" cy="159.0" r="5"><title>round 5: 0.40s</title></circle>
+<circle class="mark dot" cx="556.0" cy="166.0" r="5"><title>round 6: 0.73s</title></circle>
+<circle class="mark dot" cx="566.5" cy="152.0" r="5"><title>round 7: 0.75s</title></circle>
+<circle class="mark dot" cx="567.0" cy="159.0" r="5"><title>round 8: 0.75s</title></circle>
+<circle class="mark dot" cx="575.0" cy="166.0" r="5"><title>round 9: 0.77s</title></circle>
+<circle class="mark dot" cx="575.5" cy="152.0" r="5"><title>round 10: 0.77s</title></circle>
+<line class="median" x1="561.2" y1="144.0" x2="561.2" y2="174.0"/>
+<text class="value" x="561.2" y="138.0" text-anchor="middle">median 0.7s</text>
+</svg>
