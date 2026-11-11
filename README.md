@@ -43,10 +43,32 @@ mayfly/
 
 ## Run locally (kind)
 
-No AWS account needed. Requires Docker, [kind](https://kind.sigs.k8s.io/) v0.33+,
-kubectl, Helm 3, make and openssl. On Windows, run from a WSL2 distro (e.g.
-Ubuntu) with Docker Desktop's WSL integration enabled, and clone into the
-Linux filesystem rather than `/mnt/c` — the Makefile expects bash.
+No AWS account needed. The Makefile needs bash: on Linux and macOS any
+shell will do; on Windows, run it from Git Bash, or from a WSL2 distro with
+Docker Desktop's WSL integration enabled (clone into the Linux filesystem
+rather than `/mnt/c`).
+
+| Tool | Version | Needed for |
+|---|---|---|
+| Docker | running engine | `make demo` |
+| [kind](https://kind.sigs.k8s.io/) | v0.33+ | `make demo` |
+| kubectl | 1.34–1.36 (kind's node runs Kubernetes 1.35) | `make demo`, `make ui`, `make drift` |
+| Helm | 3.x, not 4 | `make demo`, `make lint` |
+| make, openssl | any (Git for Windows ships openssl) | everything |
+| Python | 3.12, as in CI and the app image | `make lint` |
+| gitleaks | 8.x | `make lint`, `make hooks` |
+| Terraform | 1.10+ (CI pins 1.16.6) | `make lint` |
+| tflint | any recent | `make lint` |
+| trivy | optional | the image scan CI runs: `trivy image mayfly/flask-app:dev` |
+
+On Windows, `winget` has all of them except Docker Desktop's engine. Two
+traps there: Docker Desktop puts its own, older kubectl on the system PATH
+ahead of any you install, and `python3` can be the Microsoft Store alias
+rather than a real Python (the Makefile uses `py -3.12` on Windows for that
+reason).
+
+If `make demo` fails with `no cached repo found ... (try 'helm repo update')`,
+a Helm repo you added earlier has no local index; `helm repo update` fixes it.
 
 ```bash
 make demo      # kind cluster + Argo CD + app + kube-prometheus-stack
@@ -65,8 +87,10 @@ scrape targets kind cannot expose are switched off.
 
 ## Prerequisites (AWS)
 
-- AWS CLI configured (`aws sts get-caller-identity` succeeds)
-- Terraform 1.10+, kubectl, Helm 3, ArgoCD CLI, Docker
+- AWS CLI v2 configured (`aws sts get-caller-identity` succeeds)
+- Terraform 1.10+ (CI pins 1.16.6), kubectl, Helm 3, Docker
+- Argo CD CLI matching the server: the EKS module pins chart 7.3.4, which is
+  Argo CD 2.11 (kind runs 3.5 — see the Makefile's `ARGOCD_CHART_VERSION`)
 
 ## Setup
 

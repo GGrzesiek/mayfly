@@ -13,6 +13,17 @@ LINT_IMAGE_REPO ?= localhost/flask-app
 
 VENV := .venv
 
+# Git Bash on Windows: a venv keeps its executables in Scripts/, and `python3`
+# can resolve to the Microsoft Store alias rather than a real install. The py
+# launcher picks the same minor version CI uses.
+ifeq ($(OS),Windows_NT)
+PYTHON ?= py -3.12
+VENV_BIN := $(VENV)/Scripts
+else
+PYTHON ?= python3
+VENV_BIN := $(VENV)/bin
+endif
+
 # --- Local demo on kind -------------------------------------------------------
 
 KIND_CLUSTER ?= mayfly
@@ -121,17 +132,20 @@ lint: lint-secrets lint-python lint-helm lint-tf ## Run every check
 
 # Creates .venv on first use so a fresh clone can run `make lint` unaided.
 # flake8 and pytest only ever ran in CI, and CI only ran on master -- which is
-# how two lint violations sat on master for months.
-$(VENV)/bin/flake8:
-	python3 -m venv $(VENV)
-	$(VENV)/bin/pip -q install -r app/requirements-dev.txt
+# how two lint violations sat on master for months. A stamp file rather than
+# the flake8 binary as the target: on Windows that is flake8.exe, and the
+# stamp also reinstalls when the requirements change.
+$(VENV)/.installed: app/requirements-dev.txt
+	$(PYTHON) -m venv $(VENV)
+	$(VENV_BIN)/python -m pip -q install -r app/requirements-dev.txt
+	touch $@
 
 .PHONY: lint-python
-lint-python: $(VENV)/bin/flake8 ## Lint and test the Flask app
+lint-python: $(VENV)/.installed ## Lint and test the Flask app
 	@echo "==> flake8"
-	$(VENV)/bin/flake8 app/src app/tests --max-line-length=100
+	$(VENV_BIN)/flake8 app/src app/tests --max-line-length=100
 	@echo "==> pytest"
-	cd app && ../$(VENV)/bin/pytest tests/ -q --cov=src --cov-fail-under=80
+	cd app && ../$(VENV_BIN)/pytest tests/ -q --cov=src --cov-fail-under=80
 	@echo "OK"
 
 .PHONY: lint-helm
