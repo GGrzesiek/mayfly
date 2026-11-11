@@ -8,8 +8,8 @@
       "id": 1, "type": "timeseries", "title": "Node CPU Usage %",
       "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
       "targets": [{
-        "expr": "100 - (avg by(node) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
-        "legendFormat": "{{node}}"
+        "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+        "legendFormat": "{{instance}}"
       }]
     },
     {
