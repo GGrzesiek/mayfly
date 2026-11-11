@@ -29,3 +29,10 @@ configs:
         end
       end
       return hs
+
+# Exposes argocd_app_info for the Cluster Health dashboard. Only the Service
+# is created here; the ServiceMonitor ships with the monitoring chart, since
+# its CRD does not exist yet when Argo CD is installed.
+controller:
+  metrics:
+    enabled: true

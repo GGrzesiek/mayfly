@@ -20,15 +20,17 @@ def create_app():
     @app.after_request
     def record_metrics(response):
         latency = time.time() - g.get("start", time.time())
-        endpoint = request.url_rule.rule if request.url_rule else request.path
+        # Unmatched requests share one label: the raw path would let any
+        # scanner mint a new time series per URL it tries.
+        route = request.url_rule.rule if request.url_rule else "<unmatched>"
         REQUEST_COUNT.labels(
             method=request.method,
-            endpoint=endpoint,
+            route=route,
             status=response.status_code,
         ).inc()
         REQUEST_LATENCY.labels(
             method=request.method,
-            endpoint=endpoint,
+            route=route,
         ).observe(latency)
         return response
 

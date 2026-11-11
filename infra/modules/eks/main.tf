@@ -93,6 +93,10 @@ resource "helm_release" "argocd" {
     server = {
       service = { type = "LoadBalancer" }
     }
+    # Metrics Service only; the ServiceMonitor ships with charts/monitoring.
+    controller = {
+      metrics = { enabled = true }
+    }
   })]
 
   depends_on = [module.eks]
