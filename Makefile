@@ -112,6 +112,22 @@ ui: ## Port-forward Argo CD (8080), Grafana (3000) and the app (8081); Ctrl-C to
 	$(KUBECTL) -n flask-app port-forward svc/flask-app 8081:8080 >/dev/null & \
 	wait
 
+# Argo CD's self-heal, timed. Each isolated round triggers rollouts, so 5
+# rounds take a few minutes; repeated mode backs off to 300s per round.
+# DRIFT_MODE=repeated shows the backoff; see deploy/kind/drift-test.sh.
+DRIFT_ROUNDS ?= 5
+DRIFT_MODE ?= isolated
+DRIFT_CSV ?= docs/drift/$(DRIFT_MODE).csv
+
+.PHONY: drift
+drift: ## Hand-edit and delete flask-app resources, time how long Argo CD takes to revert them
+	deploy/kind/drift-test.sh kind-$(KIND_CLUSTER) $(DRIFT_ROUNDS) $(DRIFT_CSV) $(DRIFT_MODE)
+
+.PHONY: drift-chart
+drift-chart: ## Render the docs/drift/*.csv results as SVG charts
+	python3 deploy/kind/drift-chart.py docs/drift/isolated.csv docs/drift/isolated.svg
+	python3 deploy/kind/drift-chart.py docs/drift/repeated.csv docs/drift/repeated.svg
+
 .PHONY: destroy
 destroy: ## Delete the local kind cluster (never touches AWS)
 	kind delete cluster --name $(KIND_CLUSTER)

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="302" viewBox="0 0 720 302" role="img" aria-label="Seconds Argo CD took to revert each back-to-back manual change">
+<style>
+.surface { fill: #fcfcfb; }
+.title { fill: #0b0b0b; font: 600 15px system-ui, sans-serif; }
+.label { fill: #52514e; font: 13px system-ui, sans-serif; }
+.value { fill: #0b0b0b; font: 600 12px system-ui, sans-serif; }
+.grid { stroke: #e4e3df; stroke-width: 1; }
+.median { stroke: #0b0b0b; stroke-width: 2; }
+.mark { fill: #2a78d6; stroke: #fcfcfb; stroke-width: 2; }
+.dot { fill-opacity: 0.8; }
+@media (prefers-color-scheme: dark) {
+  .surface { fill: #1a1a19; }
+  .title, .value { fill: #f0efec; }
+  .label { fill: #c3c2b7; }
+  .grid { stroke: #3a3a37; }
+  .median { stroke: #f0efec; }
+  .mark { fill: #3987e5; stroke: #1a1a19; }
+}
+</style>
+<rect class="surface" width="720" height="302" rx="6"/>
+<text class="title" x="20" y="30">Same change made again as soon as it is reverted: Argo CD backs off (2s, x3 per attempt)</text>
+<line class="grid" x1="60" y1="258.0" x2="690" y2="258.0"/>
+<text class="label" x="52" y="262.0" text-anchor="end">0s</text>
+<line class="grid" x1="60" y1="208.0" x2="690" y2="208.0"/>
+<text class="label" x="52" y="212.0" text-anchor="end">50s</text>
+<line class="grid" x1="60" y1="158.0" x2="690" y2="158.0"/>
+<text class="label" x="52" y="162.0" text-anchor="end">100s</text>
+<line class="grid" x1="60" y1="108.0" x2="690" y2="108.0"/>
+<text class="label" x="52" y="112.0" text-anchor="end">150s</text>
+<line class="grid" x1="60" y1="58.0" x2="690" y2="58.0"/>
+<text class="label" x="52" y="62.0" text-anchor="end">200s</text>
+<path class="mark" d="M88.5,258.0 V257.6 Q88.5,257.3 88.9,257.3 H136.1 Q136.5,257.3 136.5,257.6 V258.0 Z"><title>attempt 1: 0.75s</title></path>
+<text class="value" x="112.5" y="251.3" text-anchor="middle">0.7s</text>
+<text class="label" x="112.5" y="278.0" text-anchor="middle">#1</text>
+<path class="mark" d="M193.5,258.0 V256.9 Q193.5,255.9 194.6,255.9 H240.4 Q241.5,255.9 241.5,256.9 V258.0 Z"><title>attempt 2: 2.13s</title></path>
+<text class="value" x="217.5" y="249.9" text-anchor="middle">2.1s</text>
+<text class="label" x="217.5" y="278.0" text-anchor="middle">#2</text>
+<path class="mark" d="M298.5,258.0 V255.1 Q298.5,252.2 301.4,252.2 H343.6 Q346.5,252.2 346.5,255.1 V258.0 Z"><title>attempt 3: 5.75s</title></path>
+<text class="value" x="322.5" y="246.2" text-anchor="middle">5.8s</text>
+<text class="label" x="322.5" y="278.0" text-anchor="middle">#3</text>
+<path class="mark" d="M403.5,258.0 V243.8 Q403.5,239.8 407.5,239.8 H447.5 Q451.5,239.8 451.5,243.8 V258.0 Z"><title>attempt 4: 18.17s</title></path>
+<text class="value" x="427.5" y="233.8" text-anchor="middle">18.2s</text>
+<text class="label" x="427.5" y="278.0" text-anchor="middle">#4</text>
+<path class="mark" d="M508.5,258.0 V208.2 Q508.5,204.2 512.5,204.2 H552.5 Q556.5,204.2 556.5,208.2 V258.0 Z"><title>attempt 5: 53.78s</title></path>
+<text class="value" x="532.5" y="198.2" text-anchor="middle">53.8s</text>
+<text class="label" x="532.5" y="278.0" text-anchor="middle">#5</text>
+<path class="mark" d="M613.5,258.0 V100.0 Q613.5,96.0 617.5,96.0 H657.5 Q661.5,96.0 661.5,100.0 V258.0 Z"><title>attempt 6: 161.97s</title></path>
+<text class="value" x="637.5" y="90.0" text-anchor="middle">162.0s</text>
+<text class="label" x="637.5" y="278.0" text-anchor="middle">#6</text>
+</svg>

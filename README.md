@@ -63,6 +63,44 @@ What differs from AWS lives in `deploy/kind/` and `charts/*/values-kind.yaml`:
 no ingress (port-forward instead), no Slack receiver, and the control-plane
 scrape targets kind cannot expose are switched off.
 
+## Self-heal, measured
+
+Argo CD runs with `selfHeal: true`, so a hand edit to the cluster is undone
+without anyone touching git. `make drift` times that on the kind cluster: it
+edits a field git manages (an env var on the flask-app Deployment) or
+deletes the flask-app Service, and polls until the cluster matches git again.
+
+**A one-off manual change is reverted in under a second** — median 0.8s for
+the edited field and 0.7s for the deleted Service, across 10 rounds each:
+
+![Seconds to revert a one-off manual change](docs/drift/isolated.svg)
+
+**The same change made over and over is reverted more and more slowly.**
+Argo CD v3 backs off between self-heal attempts on an Application: 2s, then
+×3 per attempt, capped at 5 minutes (the controller's defaults). A manual
+sync resets it, which is what `make drift` does before every isolated round.
+Measured with 6 back-to-back edits:
+
+![Seconds to revert back-to-back manual changes](docs/drift/repeated.svg)
+
+So whoever keeps hand-patching a live resource does not win, but for up to
+five minutes at a time their change is live. That is the case for alerting
+on repeated self-heals rather than relying on them.
+
+Self-heal also only covers fields git sets. A field added by hand that the
+chart never mentions — the `restartedAt` annotation `kubectl rollout restart`
+writes, for instance — is not drift to Argo CD and stays.
+
+```bash
+make drift                                    # 5 isolated rounds -> docs/drift/isolated.csv
+make drift DRIFT_MODE=repeated DRIFT_ROUNDS=6 # back-to-back -> docs/drift/repeated.csv
+make drift-chart                              # both CSVs -> SVG charts
+```
+
+Timings are from a single-node kind cluster on Docker Desktop (Windows), polled
+with `kubectl` every 0.1s, so each figure can read up to ~0.3s high. Raw data:
+[`docs/drift/`](docs/drift/).
+
 ## Prerequisites (AWS)
 
 - AWS CLI configured (`aws sts get-caller-identity` succeeds)
